@@ -4,9 +4,12 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 
-import { Get, Req, UseGuards } from '@nestjs/common';
+import { Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { Request } from 'express';
+
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { AuthUser } from './types/auth-user.type';
 
 @Controller('auth')
 export class AuthController {
@@ -24,7 +27,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Req() req: Request) {
-    return req.user;
+  getProfile(@CurrentUser() user: AuthUser) {
+    return user;
   }
 }
