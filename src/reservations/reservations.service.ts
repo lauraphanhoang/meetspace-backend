@@ -160,4 +160,22 @@ export class ReservationsService {
       },
     });
   }
+  async findAll() {
+    return this.prisma.reservation.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            email: true,
+          },
+        },
+        room: true,
+      },
+      orderBy: {
+        startDate: 'asc',
+      },
+    });
+  }
 }

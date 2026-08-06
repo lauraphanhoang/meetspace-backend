@@ -11,12 +11,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { Request } from 'express';
-
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('reservations')
 export class ReservationsController {
@@ -32,6 +32,14 @@ export class ReservationsController {
   findMyReservations(@Req() req: any) {
     return this.reservationsService.findMyReservations(req.user.id);
   }
+
+  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get()
+  findAll() {
+    return this.reservationsService.findAll();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
