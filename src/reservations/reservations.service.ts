@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -8,12 +12,37 @@ export class ReservationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: number, createReservationDto: CreateReservationDto) {
+    const startDate = new Date(createReservationDto.startDate);
+    const endDate = new Date(createReservationDto.endDate);
+
+    const existingReservation = await this.prisma.reservation.findFirst({
+      where: {
+        roomId: createReservationDto.roomId,
+        AND: [
+          {
+            startDate: {
+              lt: endDate,
+            },
+          },
+          {
+            endDate: {
+              gt: startDate,
+            },
+          },
+        ],
+      },
+    });
+
+    if (existingReservation) {
+      throw new ConflictException('Cette salle est déjà réservée à ces dates.');
+    }
+
     return this.prisma.reservation.create({
       data: {
         userId,
         roomId: createReservationDto.roomId,
-        startDate: new Date(createReservationDto.startDate),
-        endDate: new Date(createReservationDto.endDate),
+        startDate,
+        endDate,
       },
     });
   }
