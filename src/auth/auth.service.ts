@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +27,7 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new BadRequestException(
+      throw new ConflictException(
         'Un utilisateur possède déjà cette adresse email.',
       );
     }
@@ -61,12 +64,88 @@ export class AuthService {
       role: user.role,
     };
 
+    const token = this.jwtService.sign(payload);
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: token,
       user: {
         id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
         email: user.email,
+        role: user.role,
       },
+    };
+  }
+
+  async getProfile(userId: number) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+
+    return user;
+  }
+
+  async updateProfile(userId: number, updateProfileDto: UpdateProfileDto) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+
+    if (updateProfileDto.email && updateProfileDto.email !== user.email) {
+      const existingUser = await this.usersService.findByEmail(
+        updateProfileDto.email,
+      );
+
+      if (existingUser) {
+        throw new BadRequestException(
+          'Un utilisateur possède déjà cette adresse email.',
+        );
+      }
+    }
+
+    return this.usersService.update(userId, updateProfileDto);
+  }
+
+  async updateAvatar(userId: number, avatarUrl: string) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+
+    return this.usersService.update(userId, {
+      avatarUrl,
+    });
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
+    const user = await this.usersService.findByIdWithPassword(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur introuvable');
+    }
+
+    const passwordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('Ancien mot de passe incorrect.');
+    }
+
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+    await this.usersService.update(userId, {
+      password: hashedPassword,
+    });
+
+    return {
+      message: 'Mot de passe modifié avec succès.',
     };
   }
 }

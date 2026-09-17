@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -88,6 +89,63 @@ export class ReservationsController {
   })
   findAll() {
     return this.reservationsService.findAll();
+  }
+  @Get('admin/:id')
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  findOneAdmin(@Param('id', ParseIntPipe) id: number) {
+    return this.reservationsService.findOneAdmin(id);
+  }
+
+  @Get('availability')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Vérifier la disponibilité d’une salle' })
+  @ApiOkResponse({
+    description: 'Disponibilité de la salle vérifiée.',
+  })
+  @ApiBadRequestResponse({
+    description: 'Les dates sont invalides.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Utilisateur non authentifié.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Salle introuvable.',
+  })
+  checkAvailability(
+    @Query('roomId', ParseIntPipe) roomId: number,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reservationsService.checkAvailability(
+      roomId,
+      startDate,
+      endDate,
+    );
+  }
+
+  @Get('availability/day')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Récupérer les réservations d’une salle pour une journée',
+  })
+  @ApiOkResponse({
+    description: 'Réservations de la salle récupérées.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Utilisateur non authentifié.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Salle introuvable.',
+  })
+  getRoomAvailability(
+    @Query('roomId', ParseIntPipe) roomId: number,
+    @Query('date') date: string,
+  ) {
+    return this.reservationsService.getRoomAvailability(roomId, date);
   }
 
   @Get(':id')

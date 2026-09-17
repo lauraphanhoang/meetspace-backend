@@ -7,8 +7,15 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
+
+import { memoryStorage } from 'multer';
+
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,6 +28,8 @@ import { UpdateRoomDto } from './dto/update-room.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -54,8 +63,64 @@ export class RoomsController {
     description: 'Accès réservé aux administrateurs.',
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  create(@Body() createRoomDto: CreateRoomDto) {
-    return this.roomsService.create(createRoomDto);
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+      fileFilter: (req, file, callback) => {
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return callback(
+            new BadRequestException(
+              'Les fichiers doivent être des images JPEG, PNG ou WebP.',
+            ),
+            false,
+          );
+        }
+
+        callback(null, true);
+      },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          example: 'Salle A',
+        },
+        capacity: {
+          type: 'number',
+          example: 20,
+        },
+        location: {
+          type: 'string',
+          example: 'Paris',
+        },
+        equipment: {
+          type: 'string',
+          example: 'Wi-Fi, écran',
+        },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  create(
+    @Body() createRoomDto: CreateRoomDto,
+    @UploadedFiles() images: Express.Multer.File[],
+  ) {
+    return this.roomsService.create(createRoomDto, images);
   }
 
   @Get()
@@ -85,6 +150,29 @@ export class RoomsController {
   @ApiBearerAuth()
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+      fileFilter: (req, file, callback) => {
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return callback(
+            new BadRequestException(
+              'Les fichiers doivent être des images JPEG, PNG ou WebP.',
+            ),
+            false,
+          );
+        }
+
+        callback(null, true);
+      },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Modifier une salle' })
   @ApiOkResponse({
     description: 'Salle modifiée avec succès.',
@@ -101,11 +189,42 @@ export class RoomsController {
   @ApiNotFoundResponse({
     description: 'Salle introuvable.',
   })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          example: 'Salle A',
+        },
+        capacity: {
+          type: 'number',
+          example: 20,
+        },
+        location: {
+          type: 'string',
+          example: 'Paris',
+        },
+        equipment: {
+          type: 'string',
+          example: 'Wi-Fi, écran',
+        },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateRoomDto: UpdateRoomDto,
+    @UploadedFiles() images?: Express.Multer.File[],
   ) {
-    return this.roomsService.update(id, updateRoomDto);
+    return this.roomsService.update(id, updateRoomDto, images);
   }
 
   @Delete(':id')

@@ -17,6 +17,18 @@ export class ReservationsService {
     const startDate = new Date(createReservationDto.startDate);
     const endDate = new Date(createReservationDto.endDate);
 
+    if (startDate < new Date()) {
+      throw new BadRequestException(
+        'Une réservation ne peut pas commencer dans le passé.',
+      );
+    }
+
+    if (endDate <= startDate) {
+      throw new BadRequestException(
+        'La date de fin doit être après la date de début.',
+      );
+    }
+
     const room = await this.prisma.room.findUnique({
       where: {
         id: createReservationDto.roomId,
@@ -58,16 +70,102 @@ export class ReservationsService {
       },
     });
   }
+
+  async checkAvailability(roomId: number, startDate: string, endDate: string) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (end <= start) {
+      throw new BadRequestException(
+        'La date de fin doit être après la date de début.',
+      );
+    }
+
+    // Vérifier que la salle existe
+    const room = await this.prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+    });
+
+    if (!room) {
+      throw new NotFoundException("Cette salle n'existe pas.");
+    }
+
+    // Chercher une réservation qui chevauche le créneau demandé
+    const existingReservation = await this.prisma.reservation.findFirst({
+      where: {
+        roomId,
+        AND: [
+          {
+            startDate: {
+              lt: end,
+            },
+          },
+          {
+            endDate: {
+              gt: start,
+            },
+          },
+        ],
+      },
+    });
+
+    return {
+      available: !existingReservation,
+    };
+  }
+
+  async getRoomAvailability(roomId: number, date: string) {
+    const startOfDay = new Date(`${date}T00:00:00`);
+    const endOfDay = new Date(`${date}T23:59:59`);
+
+    const room = await this.prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+    });
+
+    if (!room) {
+      throw new NotFoundException("Cette salle n'existe pas.");
+    }
+
+    const reservations = await this.prisma.reservation.findMany({
+      where: {
+        roomId,
+        startDate: {
+          lt: endOfDay,
+        },
+        endDate: {
+          gt: startOfDay,
+        },
+      },
+      select: {
+        startDate: true,
+        endDate: true,
+      },
+      orderBy: {
+        startDate: 'asc',
+      },
+    });
+
+    return reservations;
+  }
+
   async findMyReservations(userId: number) {
     return this.prisma.reservation.findMany({
       where: {
         userId,
       },
       include: {
-        room: true,
+        room: {
+          include: {
+            images: true,
+          },
+        },
       },
       orderBy: {
-        startDate: 'asc',
+        startDate: 'desc',
       },
     });
   }
@@ -77,7 +175,11 @@ export class ReservationsService {
         id,
       },
       include: {
-        room: true,
+        room: {
+          include: {
+            images: true,
+          },
+        },
       },
     });
 
@@ -116,6 +218,12 @@ export class ReservationsService {
       ? new Date(updateReservationDto.endDate)
       : reservation.endDate;
 
+    if (startDate < new Date()) {
+      throw new BadRequestException(
+        'Une réservation ne peut pas commencer dans le passé.',
+      );
+    }
+
     if (endDate <= startDate) {
       throw new BadRequestException(
         'La date de fin doit être après la date de début.',
@@ -123,6 +231,15 @@ export class ReservationsService {
     }
 
     const roomId = updateReservationDto.roomId ?? reservation.roomId;
+    const room = await this.prisma.room.findUnique({
+      where: {
+        id: roomId,
+      },
+    });
+
+    if (!room) {
+      throw new NotFoundException("Cette salle n'existe pas.");
+    }
 
     const conflict = await this.prisma.reservation.findFirst({
       where: {
@@ -160,6 +277,7 @@ export class ReservationsService {
       },
     });
   }
+
   async findAll() {
     return this.prisma.reservation.findMany({
       include: {
@@ -171,11 +289,44 @@ export class ReservationsService {
             email: true,
           },
         },
-        room: true,
+        room: {
+          include: {
+            images: true,
+          },
+        },
       },
       orderBy: {
-        startDate: 'asc',
+        startDate: 'desc',
       },
     });
+  }
+
+  async findOneAdmin(id: number) {
+    const reservation = await this.prisma.reservation.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            email: true,
+          },
+        },
+        room: {
+          include: {
+            images: true,
+          },
+        },
+      },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException("Cette réservation n'existe pas.");
+    }
+
+    return reservation;
   }
 }
