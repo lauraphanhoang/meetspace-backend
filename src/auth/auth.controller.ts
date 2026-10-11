@@ -20,8 +20,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 import {
   ApiBadRequestResponse,
@@ -37,7 +37,10 @@ import {
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Créer un compte utilisateur' })
@@ -109,21 +112,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads/avatars',
-        filename: (req, file, callback) => {
-          const uniqueName = `${Date.now()}-${Math.round(
-            Math.random() * 1e9,
-          )}${extname(file.originalname)}`;
-
-          callback(null, uniqueName);
-        },
-      }),
       limits: {
         fileSize: 5 * 1024 * 1024,
       },
       fileFilter: (req, file, callback) => {
         const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
         if (!allowedMimeTypes.includes(file.mimetype)) {
           return callback(
             new BadRequestException(
@@ -149,7 +143,10 @@ export class AuthController {
       throw new BadRequestException('Aucune image sélectionnée.');
     }
 
-    const avatarUrl = `/uploads/avatars/${file.filename}`;
+    const avatarUrl = await this.cloudinaryService.uploadImage(
+      file,
+      'meetspace/avatars',
+    );
 
     return this.authService.updateAvatar(user.id, avatarUrl);
   }

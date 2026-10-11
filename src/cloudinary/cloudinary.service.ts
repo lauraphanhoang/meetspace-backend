@@ -11,11 +11,14 @@ export class CloudinaryService {
     });
   }
 
-  async uploadImage(file: Express.Multer.File): Promise<string> {
+  async uploadImage(
+    file: Express.Multer.File,
+    folder = 'meetspace/rooms',
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: 'meetspace/rooms',
+          folder,
           resource_type: 'image',
         },
         (error, result) => {

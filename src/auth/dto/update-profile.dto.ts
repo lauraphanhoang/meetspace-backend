@@ -9,7 +9,7 @@ import {
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({
-    example: 'Laura',
+    example: 'Tom',
     description: "Prénom de l'utilisateur",
   })
   @IsOptional()
@@ -23,7 +23,7 @@ export class UpdateProfileDto {
   firstname?: string;
 
   @ApiPropertyOptional({
-    example: 'PHAN-HOANG',
+    example: 'DUPONT',
     description: "Nom de l'utilisateur",
   })
   @IsOptional()
@@ -37,7 +37,7 @@ export class UpdateProfileDto {
   lastname?: string;
 
   @ApiPropertyOptional({
-    example: 'laura@example.com',
+    example: 'dupont@example.com',
     description: "Adresse e-mail de l'utilisateur",
   })
   @IsOptional()
