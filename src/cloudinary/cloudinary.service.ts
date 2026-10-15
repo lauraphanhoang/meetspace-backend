@@ -39,4 +39,31 @@ export class CloudinaryService {
       uploadStream.end(file.buffer);
     });
   }
+
+  async deleteImage(imageUrl: string): Promise<void> {
+    const url = new URL(imageUrl);
+    const uploadMarker = '/upload/';
+
+    const uploadIndex = url.pathname.indexOf(uploadMarker);
+
+    if (uploadIndex === -1) {
+      throw new Error("L'URL de l'image Cloudinary est invalide.");
+    }
+
+    const publicIdWithVersion = url.pathname.slice(
+      uploadIndex + uploadMarker.length,
+    );
+
+    const publicId = publicIdWithVersion
+      .replace(/^v\d+\//, '')
+      .replace(/\.[^.]+$/, '');
+
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: 'image',
+    });
+
+    if (result.result !== 'ok' && result.result !== 'not found') {
+      throw new Error("La suppression de l'image Cloudinary a échoué.");
+    }
+  }
 }

@@ -227,6 +227,30 @@ export class RoomsController {
     return this.roomsService.update(id, updateRoomDto, images);
   }
 
+  @Delete(':roomId/images/:imageId')
+  @ApiBearerAuth()
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOperation({ summary: "Supprimer une photo d'une salle" })
+  @ApiOkResponse({
+    description: 'Photo supprimée avec succès.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Utilisateur non authentifié.',
+  })
+  @ApiForbiddenResponse({
+    description: 'Accès réservé aux administrateurs.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Photo ou salle introuvable.',
+  })
+  removeImage(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('imageId', ParseIntPipe) imageId: number,
+  ) {
+    return this.roomsService.removeImage(roomId, imageId);
+  }
+
   @Delete(':id')
   @ApiBearerAuth()
   @Roles(Role.ADMIN)

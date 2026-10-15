@@ -135,6 +135,11 @@ export class UsersService {
         role: true,
         avatarUrl: true,
         createdAt: true,
+        _count: {
+          select: {
+            reservations: true,
+          },
+        },
       },
     });
   }

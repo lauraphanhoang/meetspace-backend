@@ -135,4 +135,31 @@ export class RoomsService {
       },
     });
   }
+  async removeImage(roomId: number, imageId: number) {
+    const image = await this.prisma.roomImage.findFirst({
+      where: {
+        id: imageId,
+        roomId,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException(
+        `La photo ${imageId} n'existe pas pour la salle ${roomId}.`,
+      );
+    }
+
+    await this.cloudinaryService.deleteImage(image.url);
+
+    await this.prisma.roomImage.delete({
+      where: {
+        id: imageId,
+      },
+    });
+
+    return {
+      message: 'Photo supprimée avec succès.',
+      imageId,
+    };
+  }
 }
