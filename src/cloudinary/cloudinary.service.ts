@@ -23,7 +23,12 @@ export class CloudinaryService {
         },
         (error, result) => {
           if (error) {
-            reject(error);
+            const message =
+              typeof error === 'object' && error !== null && 'message' in error
+                ? String(error.message)
+                : "L'upload de l'image a échoué.";
+
+            reject(new Error(message));
             return;
           }
 
@@ -58,11 +63,16 @@ export class CloudinaryService {
       .replace(/^v\d+\//, '')
       .replace(/\.[^.]+$/, '');
 
-    const result = await cloudinary.uploader.destroy(publicId, {
+    const response: unknown = await cloudinary.uploader.destroy(publicId, {
       resource_type: 'image',
     });
 
-    if (result.result !== 'ok' && result.result !== 'not found') {
+    const deletionResult =
+      typeof response === 'object' && response !== null && 'result' in response
+        ? response.result
+        : undefined;
+
+    if (deletionResult !== 'ok' && deletionResult !== 'not found') {
       throw new Error("La suppression de l'image Cloudinary a échoué.");
     }
   }

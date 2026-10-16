@@ -17,7 +17,7 @@ export function IsEndDateAfterStartDate(
       constraints: [property],
       validator: {
         validate(value: string, args: ValidationArguments) {
-          const [relatedPropertyName] = args.constraints;
+          const relatedPropertyName = args.constraints[0] as string;
           const startDate = (args.object as Record<string, string>)[
             relatedPropertyName
           ];
