@@ -1,98 +1,132 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# MeetSpace — Backend
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+MeetSpace est une application web full-stack de réservation de salles, développée dans le cadre de la préparation au titre **RNCP 41133 — Concepteur Développeur d'Applications (niveau 6)**.
 
-## Description
+Ce dépôt contient l'API REST développée avec NestJS, permettant de gérer les utilisateurs, les salles et les réservations.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Application en ligne
 
-## Project setup
+- **API REST :** https://meetspace-backend-5ybo.onrender.com
+- **Documentation Swagger en local :** http://localhost:3001/api
 
-```bash
-$ npm install
-```
+Le backend est hébergé sur Render et utilise une base PostgreSQL hébergée sur Neon.
 
-## Compile and run the project
+## Technologies utilisées
 
-```bash
-# development
-$ npm run start
+- **NestJS 11 / TypeScript 5** — Développement de l'API REST
+- **PostgreSQL / Prisma 6** — Base de données et ORM
+- **JWT / Passport / bcrypt** — Authentification et sécurité
+- **Cloudinary / Multer** — Gestion des images
+- **Swagger** — Documentation de l'API
+- **Jest 30** — Tests automatisés
+- **Render / Neon** — Hébergement
 
-# watch mode
-$ npm run start:dev
+## Fonctionnalités principales
 
-# production mode
-$ npm run start:prod
-```
+### Authentification
+- Inscription, connexion et gestion du profil
+- Authentification JWT et gestion des rôles `USER` et `ADMIN`
+- Protection des routes avec les Guards NestJS
 
-## Run tests
+### Gestion des salles
+- Consultation des salles
+- Création, modification et suppression par un administrateur
+- Gestion des images avec Cloudinary
 
-```bash
-# unit tests
-$ npm run test
+### Gestion des réservations
+- Création, consultation, modification et suppression
+- Vérification des disponibilités et détection des conflits
+- Contrôle des droits d'accès aux réservations
+- Consultation des réservations par l'administrateur 
 
-# e2e tests
-$ npm run test:e2e
+## Installation en local
 
-# test coverage
-$ npm run test:cov
-```
+### Prérequis
 
-## Deployment
+- Node.js et npm
+- PostgreSQL
+- Un compte Cloudinary
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 1. Cloner le dépôt
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone https://github.com/lauraphanhoang/meetspace-backend.git
+cd meetspace-backend
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 2. Installer les dépendances
 
-## Resources
+```bash
+npm install
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 3. Configurer les variables d'environnement
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Créer un fichier `.env` à la racine du projet :
 
-## Support
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
+JWT_SECRET="votre_cle_secrete"
+FRONTEND_URL="http://localhost:3000"
+PORT=3001
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+CLOUDINARY_CLOUD_NAME="votre_cloud_name"
+CLOUDINARY_API_KEY="votre_api_key"
+CLOUDINARY_API_SECRET="votre_api_secret"
+```
 
-## Stay in touch
+Ne jamais publier les véritables identifiants et secrets sur GitHub.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 4. Préparer la base de données
 
-## License
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 5. Démarrer le serveur
+
+```bash
+npm run start:dev
+```
+
+L'API est accessible sur http://localhost:3001.
+
+## Documentation API
+
+La documentation Swagger est disponible en local :
+
+http://localhost:3001/api
+
+Elle permet de consulter et de tester les endpoints liés à l'authentification, aux utilisateurs, aux salles et aux réservations.
+
+## Tests et commandes
+
+```bash
+npm run start:dev   # Démarrage en développement
+npm run build       # Compilation
+npm run start:prod  # Démarrage de la version compilée
+npm run test        # Tests Jest
+npm run test:cov    # Rapport de couverture
+npm run lint        # Analyse et correction ESLint
+```
+
+**Résultats Jest du 17 octobre 2026 :**
+- 12 suites de tests validées
+- 127 tests réussis
+- Aucun échec
+
+## Déploiement
+
+- **Backend :** Render
+- **Base de données :** Neon (PostgreSQL)
+- **Images :** Cloudinary
+
+Les variables d'environnement sont configurées sur Render.
+
+Les migrations Prisma sont appliquées en production avec :
+
+```bash
+npx prisma migrate deploy
+```
