@@ -7,7 +7,7 @@ Ce dépôt contient l'API REST développée avec NestJS, permettant de gérer le
 
 ## Application en ligne
 
-- **API REST :** https://meetspace-backend-5ybo.onrender.com
+- **API REST :** https://meetspace-backend-5ybo.onrender.com/api
 - **Documentation Swagger en local :** http://localhost:3001/api
 
 Le backend est hébergé sur Render et utilise une base PostgreSQL hébergée sur Neon.
